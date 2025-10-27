@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import PasswordInput from './PasswordInput'
-import { validateRegister, validatePassword } from '../../utils/validation'
+import { validateRegister, validatePassword, mapRoleToSchema } from '../../utils/validation'
 
 export default function Register({ onToggleAuth }) {
   const [formData, setFormData] = useState({
-    nombres: '',
-    apellidos: '',
+    full_name: '',
     email: '',
     rol: '',
     password: '',
@@ -44,7 +43,16 @@ export default function Register({ onToggleAuth }) {
     setErrors({})
 
     try {
-      const result = await register(formData)
+      // Construir datos para el schema con el rol mapeado
+      const userData = {
+        full_name: formData.full_name,
+        email: formData.email,
+        // Mapear el rol del formulario al valor del schema
+        role: mapRoleToSchema(formData.rol),
+        password: formData.password
+      }
+      
+      const result = await register(userData)
       
       if (!result.success) {
         setErrors({ submit: result.error })
@@ -98,77 +106,40 @@ export default function Register({ onToggleAuth }) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Nombres y Apellidos */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="group">
-                <label htmlFor="nombres" className="block text-sm font-medium text-cyan-300 mb-2 group-focus-within:text-cyan-400 transition-colors">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span>Nombres</span>
-                  </div>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="nombres"
-                    name="nombres"
-                    value={formData.nombres}
-                    onChange={handleChange}
-                    className={`w-full bg-slate-700/50 border-2 ${
-                      errors.nombres 
-                        ? 'border-red-500/50 focus:border-red-400' 
-                        : 'border-slate-600/50 focus:border-cyan-400/50'
-                    } rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300`}
-                    placeholder="Tus nombres"
-                  />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
+            {/* Nombre Completo */}
+            <div className="group">
+              <label htmlFor="full_name" className="block text-sm font-medium text-cyan-300 mb-2 group-focus-within:text-cyan-400 transition-colors">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Nombre Completo</span>
                 </div>
-                {errors.nombres && (
-                  <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{errors.nombres}</span>
-                  </p>
-                )}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="full_name"
+                  name="full_name"
+                  value={formData.full_name}
+                  onChange={handleChange}
+                  className={`w-full bg-slate-700/50 border-2 ${
+                    errors.full_name 
+                      ? 'border-red-500/50 focus:border-red-400' 
+                      : 'border-slate-600/50 focus:border-cyan-400/50'
+                  } rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300`}
+                  placeholder="Tu nombre completo"
+                />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
               </div>
-
-              <div className="group">
-                <label htmlFor="apellidos" className="block text-sm font-medium text-cyan-300 mb-2 group-focus-within:text-cyan-400 transition-colors">
-                  <div className="flex items-center space-x-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span>Apellidos</span>
-                  </div>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="apellidos"
-                    name="apellidos"
-                    value={formData.apellidos}
-                    onChange={handleChange}
-                    className={`w-full bg-slate-700/50 border-2 ${
-                      errors.apellidos 
-                        ? 'border-red-500/50 focus:border-red-400' 
-                        : 'border-slate-600/50 focus:border-cyan-400/50'
-                    } rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300`}
-                    placeholder="Tus apellidos"
-                  />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
-                </div>
-                {errors.apellidos && (
-                  <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{errors.apellidos}</span>
-                  </p>
-                )}
-              </div>
+              {errors.full_name && (
+                <p className="mt-2 text-sm text-red-400 flex items-center space-x-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{errors.full_name}</span>
+                </p>
+              )}
             </div>
 
             {/* Email */}
@@ -344,7 +315,7 @@ export default function Register({ onToggleAuth }) {
           {/* Enlace a login */}
           <div className="mt-8 text-center">
             <p className="text-slate-400 text-sm">
-              ¿Ya eres parte de EduAI?{' '}
+              ¿Ya eres parte de EduPlay?{' '}
               <button
                 onClick={onToggleAuth}
                 className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors duration-200 hover:underline"

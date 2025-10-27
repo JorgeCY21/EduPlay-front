@@ -165,6 +165,7 @@ export interface QuestionAudio {
 export interface Interaction {
   id: string
   emotion: Emotion
+  grade: number
   engagement: number
   createdAt: Date
   student_id: string

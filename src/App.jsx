@@ -37,7 +37,7 @@ function App() {
 
   // Renderizar vistas según el rol del usuario
   const renderVista = () => {
-    if (user.rol === 'docente') {
+    if (user.role === 'TEACHER') {
       switch(vistaActual) {
         case 'dashboard':
           return <DashboardDocente />
@@ -68,7 +68,7 @@ function App() {
 
   // Navegación según el rol
   const renderNavegacion = () => {
-    if (user.rol === 'docente') {
+    if (user.role === 'TEACHER') {
       return (
         <nav className="flex space-x-4">
           <button 
@@ -141,6 +141,26 @@ function App() {
     }
   }
 
+  // Obtener nombre para mostrar
+  const getDisplayName = () => {
+    if (user.full_name) {
+      return user.full_name;
+    }
+    // Fallback para compatibilidad con datos antiguos
+    return user.nombres && user.apellidos 
+      ? `${user.nombres} ${user.apellidos}`
+      : user.email;
+  }
+
+  // Obtener rol para mostrar
+  const getDisplayRole = () => {
+    if (user.role === 'TEACHER') return '👨‍🏫 Docente';
+    if (user.role === 'STUDENT') return '👨‍🎓 Estudiante';
+    if (user.role === 'ADMIN') return '👨‍💼 Administrador';
+    // Fallback para compatibilidad
+    return user.rol === 'docente' ? '👨‍🏫 Docente' : '👨‍🎓 Estudiante';
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header con navegación */}
@@ -150,7 +170,7 @@ function App() {
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-bold text-gray-900">Asistente Educativo</h1>
               <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                {user.rol === 'docente' ? '👨‍🏫 Docente' : '👨‍🎓 Estudiante'}
+                {getDisplayRole()}
               </span>
             </div>
             
@@ -160,7 +180,7 @@ function App() {
               {/* Información del usuario y logout */}
               <div className="flex items-center space-x-3 border-l pl-4 ml-4">
                 <span className="text-sm text-gray-700">
-                  {user.nombres} {user.apellidos}
+                  {getDisplayName()}
                 </span>
                 <button 
                   onClick={logout}

@@ -25,12 +25,9 @@ export const validatePassword = (password) => {
 export const validateRegister = (formData) => {
   const errors = {}
 
-  if (!formData.nombres?.trim()) {
-    errors.nombres = 'Los nombres son obligatorios'
-  }
-
-  if (!formData.apellidos?.trim()) {
-    errors.apellidos = 'Los apellidos son obligatorios'
+  // Cambiado de nombres/apellidos a full_name
+  if (!formData.full_name?.trim()) {
+    errors.full_name = 'El nombre completo es obligatorio'
   }
 
   if (!formData.email?.trim()) {
@@ -57,4 +54,22 @@ export const validateRegister = (formData) => {
   }
 
   return errors
+}
+
+// Función para mapear el rol del formulario al valor del schema
+export const mapRoleToSchema = (rolForm) => {
+  const roleMap = {
+    'docente': 'TEACHER',
+    'estudiante': 'STUDENT'
+  }
+  return roleMap[rolForm] || 'STUDENT' // Valor por defecto
+}
+
+// Función para mapear el rol del schema al valor del formulario
+export const mapRoleToForm = (roleSchema) => {
+  const roleMap = {
+    'TEACHER': 'docente',
+    'STUDENT': 'estudiante'
+  }
+  return roleMap[roleSchema] || 'estudiante' // Valor por defecto
 }

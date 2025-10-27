@@ -89,7 +89,7 @@ export const mockUsers = [
     full_name: 'Jore Enrique Condorios Yllapuma',
     email: 'jcondorios@unsa.edu.pe',
     password: 'Martinez777@',
-    role: 'STUDENT',
+    role: 'TEACHER',
     createdAt: new Date(),
     student: {
       id: 's3',

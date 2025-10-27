@@ -8,15 +8,13 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Verificar si hay usuario en localStorage al cargar la app
     const savedUser = localStorage.getItem('user')
     if (savedUser) {
       setUser(JSON.parse(savedUser))
     }
     setLoading(false)
-
-    // Para debugging: mostrar usuarios disponibles en consola
-    console.log('👥 Usarios mock disponibles:', getMockUsers())
+    
+    console.log('👥 Usuarios mock disponibles:', getMockUsers())
   }, [])
 
   const login = async (email, password) => {

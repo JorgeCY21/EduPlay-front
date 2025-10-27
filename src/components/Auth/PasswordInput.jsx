@@ -6,14 +6,13 @@ export default function PasswordInput({
   placeholder = "Contraseña",
   showRequirements = false,
   validation = null,
-  name = "password" // Agregar name para identificar el campo
+  name = "password" // Asegurar que tenga un valor por defecto
 }) {
   const [showPassword, setShowPassword] = useState(false)
 
   const handleInputChange = (e) => {
-    // Llamar a la función onChange pasada como prop
     if (onChange) {
-      onChange(e)
+      onChange(e) // Pasar el evento completo para que handleChange pueda leer el name
     }
   }
 
@@ -22,9 +21,9 @@ export default function PasswordInput({
       <div className="relative">
         <input
           type={showPassword ? "text" : "password"}
-          name={name}
+          name={name} // ¡IMPORTANTE! Pasar el name al input
           value={value}
-          onChange={handleInputChange} // Usar la función corregida
+          onChange={handleInputChange}
           placeholder={placeholder}
           className="input-field pr-10 w-full"
         />

@@ -171,8 +171,9 @@ export default function Register({ onToggleAuth }) {
               </label>
               <PasswordInput
                 value={formData.confirmPassword}
-                onChange={(e) => handleChange(e)}
+                onChange={handleChange}
                 placeholder="Repite tu contraseña"
+                name="confirmPassword" // ← ¡Y ESTO TAMBIÉN!
               />
               {errors.confirmPassword && (
                 <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>

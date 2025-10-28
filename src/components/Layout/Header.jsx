@@ -1,19 +1,16 @@
 import { useAuth } from '../../context/AuthContext'
+import { motion } from 'framer-motion'
 
 export default function Header({ vistaActual, setVistaActual }) {
   const { user, logout } = useAuth()
 
-  // Obtener nombre para mostrar
   const getDisplayName = () => {
-    if (user.full_name) {
-      return user.full_name
-    }
-    return user.nombres && user.apellidos 
+    if (user.full_name) return user.full_name
+    return user.nombres && user.apellidos
       ? `${user.nombres} ${user.apellidos}`
       : user.email
   }
 
-  // Obtener rol para mostrar
   const getDisplayRole = () => {
     if (user.role === 'TEACHER') return '👨‍🏫 Docente'
     if (user.role === 'STUDENT') return '👨‍🎓 Estudiante'
@@ -21,124 +18,82 @@ export default function Header({ vistaActual, setVistaActual }) {
     return user.rol === 'docente' ? '👨‍🏫 Docente' : '👨‍🎓 Estudiante'
   }
 
-  // Navegación según el rol
-  const renderNavegacion = () => {
-    if (user.role === 'TEACHER') {
-      return (
-        <nav className="flex space-x-3">
-          <button 
-            onClick={() => setVistaActual('dashboard')}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              vistaActual === 'dashboard' 
-                ? 'bg-teal-500 text-white shadow-lg ring-4 ring-teal-200 transform scale-105' 
-                : 'text-teal-100 hover:bg-teal-400 hover:text-white border-2 border-teal-300 hover:border-teal-200'
-            }`}
-          >
-            📊 Estadísticas
-          </button>
-          <button 
-            onClick={() => setVistaActual('crear-sesion')}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              vistaActual === 'crear-sesion' 
-                ? 'bg-teal-500 text-white shadow-lg ring-4 ring-teal-200 transform scale-105' 
-                : 'text-teal-100 hover:bg-teal-400 hover:text-white border-2 border-teal-300 hover:border-teal-200'
-            }`}
-          >
-            🎯 Crear Sesión
-          </button>
-          <button 
-            onClick={() => setVistaActual('perfil')}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              vistaActual === 'perfil' 
-                ? 'bg-teal-500 text-white shadow-lg ring-4 ring-teal-200 transform scale-105' 
-                : 'text-teal-100 hover:bg-teal-400 hover:text-white border-2 border-teal-300 hover:border-teal-200'
-            }`}
-          >
-            👤 Perfil
-          </button>
-        </nav>
-      )
-    } else {
-      return (
-        <nav className="flex space-x-3">
-          <button 
-            onClick={() => setVistaActual('dashboard')}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              vistaActual === 'dashboard' 
-                ? 'bg-cyan-500 text-white shadow-lg ring-4 ring-cyan-200 transform scale-105' 
-                : 'text-cyan-100 hover:bg-cyan-400 hover:text-white border-2 border-cyan-300 hover:border-cyan-200'
-            }`}
-          >
-            🏠 Inicio
-          </button>
-          <button 
-            onClick={() => setVistaActual('actividades')}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              vistaActual === 'actividades' 
-                ? 'bg-cyan-500 text-white shadow-lg ring-4 ring-cyan-200 transform scale-105' 
-                : 'text-cyan-100 hover:bg-cyan-400 hover:text-white border-2 border-cyan-300 hover:border-cyan-200'
-            }`}
-          >
-            📚 Actividades
-          </button>
-          <button 
-            onClick={() => setVistaActual('perfil')}
-            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
-              vistaActual === 'perfil' 
-                ? 'bg-cyan-500 text-white shadow-lg ring-4 ring-cyan-200 transform scale-105' 
-                : 'text-cyan-100 hover:bg-cyan-400 hover:text-white border-2 border-cyan-300 hover:border-cyan-200'
-            }`}
-          >
-            👤 Perfil
-          </button>
-        </nav>
-      )
-    }
-  }
+  const navItemsTeacher = [
+    { id: 'dashboard', label: '📊 Estadísticas' },
+    { id: 'crear-sesion', label: '🎯 Crear Sesión' },
+    { id: 'perfil', label: '👤 Perfil' },
+  ]
+
+  const navItemsStudent = [
+    { id: 'dashboard', label: '🏠 Inicio' },
+    { id: 'actividades', label: '📚 Actividades' },
+    { id: 'perfil', label: '👤 Perfil' },
+  ]
+
+  const navItems = user.role === 'TEACHER' ? navItemsTeacher : navItemsStudent
 
   return (
-    <header className="bg-gradient-to-r from-teal-600 to-cyan-600 border-b-4 border-teal-500 shadow-2xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          {/* Logo y información del usuario */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/30 backdrop-blur-sm">
-                <span className="text-white font-bold text-xl">🎓</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-white">
-                  EduPlay
-                </h1>
-                <span className="px-3 py-1 bg-white/20 text-white text-sm font-bold rounded-full border-2 border-white/30 backdrop-blur-sm shadow-md">
-                  {getDisplayRole()}
-                </span>
-              </div>
-            </div>
-          </div>
+    <header className="bg-gradient-to-r from-[#1A1A1A] via-[#2B0B0B] to-[#3E0A08] 
+                       backdrop-blur-md border-b border-white/10 shadow-2xl">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex justify-between items-center py-6">
           
-          {/* Navegación y usuario */}
-          <div className="flex items-center space-x-6">
-            {renderNavegacion()}
-            
-            {/* Información del usuario y logout */}
-            <div className="flex items-center space-x-4 border-l-2 border-white/30 pl-4 ml-4">
-              <div className="text-right">
-                <span className="text-sm text-white font-bold block">
-                  {getDisplayName()}
-                </span>
-                <span className="text-xs text-white/90 block">
-                  {user.email}
-                </span>
-              </div>
-              <button 
-                onClick={logout}
-                className="px-4 py-2 rounded-lg text-sm font-bold text-white hover:bg-white/30 border-2 border-white/50 transition-all duration-300 hover:border-white shadow-md hover:shadow-lg"
-              >
-                🚪 Salir
-              </button>
+          {/* Logo + Título */}
+          <motion.div 
+            className="flex items-center gap-4"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="w-14 h-14 bg-gradient-to-br from-[#FB190D] via-[#D21204] to-[#7C0902]
+                            rounded-2xl flex items-center justify-center shadow-lg ring-2 ring-white/10">
+              <span className="text-white text-2xl">🎓</span>
             </div>
-          </div>
+            <div>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight">
+                EduPlay
+              </h1>
+              <p className="text-sm text-white/70 font-medium">
+                {getDisplayRole()}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Navegación */}
+          <nav className="hidden md:flex items-center gap-3">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setVistaActual(item.id)}
+                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-300
+                  ${
+                    vistaActual === item.id
+                      ? 'bg-gradient-to-r from-[#FD4A3D] to-[#CE0D03] text-white shadow-md scale-105'
+                      : 'text-white/85 hover:text-white hover:bg-white/10'
+                  }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Usuario y Logout */}
+          <motion.div 
+            className="flex items-center gap-5 border-l border-white/20 pl-5"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <div className="text-right">
+              <p className="text-base text-white font-semibold">{getDisplayName()}</p>
+              <p className="text-xs text-white/70">{user.email}</p>
+            </div>
+            <button
+              onClick={logout}
+              className="bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-lg 
+                         font-semibold text-sm transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              🚪 Salir
+            </button>
+          </motion.div>
         </div>
       </div>
     </header>

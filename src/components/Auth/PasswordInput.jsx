@@ -19,12 +19,12 @@ export default function PasswordInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className="w-full bg-slate-700/50 border-2 border-slate-600/50 focus:border-cyan-400/50 rounded-xl px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all duration-300 pr-12"
+          className="w-full bg-white/80 border-2 border-gray-300 focus:border-[#FD655E] rounded-xl px-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#FD655E]/20 transition-all duration-300 pr-12"
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-cyan-400 transition-colors duration-200"
+          className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-[#FB190D] transition-colors duration-200"
         >
           {showPassword ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,31 +37,31 @@ export default function PasswordInput({
             </svg>
           )}
         </button>
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#FD655E]/5 to-[#7C0902]/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 -z-10"></div>
       </div>
 
       {showRequirements && validation && (
-        <div className="text-sm space-y-2 p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
-          <p className="font-medium text-cyan-300">Requisitos de seguridad:</p>
+        <div className="text-sm space-y-2 p-3 bg-white/60 rounded-lg border border-gray-300 backdrop-blur-sm">
+          <p className="font-medium text-[#FB190D]">Requisitos de seguridad:</p>
           <ul className="text-xs space-y-1">
-            <li className={`flex items-center ${validation.requirements.hasMinLength ? 'text-emerald-400' : 'text-slate-400'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasMinLength ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
+            <li className={`flex items-center ${validation.requirements.hasMinLength ? 'text-[#7C0902]' : 'text-gray-500'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasMinLength ? 'bg-[#7C0902]' : 'bg-gray-400'}`}></div>
               Mínimo 8 caracteres
             </li>
-            <li className={`flex items-center ${validation.requirements.hasUpperCase ? 'text-emerald-400' : 'text-slate-400'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasUpperCase ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
+            <li className={`flex items-center ${validation.requirements.hasUpperCase ? 'text-[#B30C03]' : 'text-gray-500'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasUpperCase ? 'bg-[#B30C03]' : 'bg-gray-400'}`}></div>
               Una letra mayúscula
             </li>
-            <li className={`flex items-center ${validation.requirements.hasLowerCase ? 'text-emerald-400' : 'text-slate-400'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasLowerCase ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
+            <li className={`flex items-center ${validation.requirements.hasLowerCase ? 'text-[#CE0D03]' : 'text-gray-500'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasLowerCase ? 'bg-[#CE0D03]' : 'bg-gray-400'}`}></div>
               Una letra minúscula
             </li>
-            <li className={`flex items-center ${validation.requirements.hasNumbers ? 'text-emerald-400' : 'text-slate-400'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasNumbers ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
+            <li className={`flex items-center ${validation.requirements.hasNumbers ? 'text-[#FB190D]' : 'text-gray-500'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasNumbers ? 'bg-[#FB190D]' : 'bg-gray-400'}`}></div>
               Un número
             </li>
-            <li className={`flex items-center ${validation.requirements.hasSpecialChar ? 'text-emerald-400' : 'text-slate-400'}`}>
-              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasSpecialChar ? 'bg-emerald-400' : 'bg-slate-500'}`}></div>
+            <li className={`flex items-center ${validation.requirements.hasSpecialChar ? 'text-[#FD655E]' : 'text-gray-500'}`}>
+              <div className={`w-1.5 h-1.5 rounded-full mr-2 ${validation.requirements.hasSpecialChar ? 'bg-[#FD655E]' : 'bg-gray-400'}`}></div>
               Un carácter especial
             </li>
           </ul>

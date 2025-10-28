@@ -49,9 +49,9 @@ function App() {
           return <PerfilEstudiante />
         case 'actividades':
           return (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-4">🎯 Mis Actividades</h2>
-              <p className="text-slate-600">Vista de actividades del estudiante</p>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">🎯 Mis Actividades</h2>
+              <p className="text-gray-600">Vista de actividades del estudiante</p>
             </div>
           )
         default:
@@ -61,8 +61,8 @@ function App() {
   }
 
   return (
-    // FONDO MÁS CLARO - Gradiente suave azul-verde
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-emerald-50">
+    // FONDO ACTUALIZADO - Gradiente suave rojo/beige
+    <div className="min-h-screen bg-gradient-to-br from-[#f8f4f0] via-[#f0e6e0] to-[#f8f4f0]">
       {/* Header con navegación */}
       <Header vistaActual={vistaActual} setVistaActual={setVistaActual} />
 

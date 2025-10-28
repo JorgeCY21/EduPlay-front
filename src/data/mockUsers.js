@@ -86,7 +86,7 @@ export const mockUsers = [
   },
   {
     id: '6',
-    full_name: 'Jore Enrique Condorios Yllapuma',
+    full_name: 'Jorge Enrique Condorios Yllapuma',
     email: 'jcondorios@unsa.edu.pe',
     password: 'Martinez777@',
     role: 'TEACHER',

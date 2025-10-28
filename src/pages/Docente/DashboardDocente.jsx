@@ -66,7 +66,6 @@ const mockData = {
 export default function DashboardDocente() {
   const { user } = useAuth()
   const [data, setData] = useState(mockData)
-  const [selectedClassroom, setSelectedClassroom] = useState(null)
   const [loading, setLoading] = useState(false)
 
   // Simular carga de datos
@@ -79,15 +78,15 @@ export default function DashboardDocente() {
   }, [])
 
   const getRiskColor = (score) => {
-    if (score === 0) return 'text-emerald-400'
-    if (score <= 2) return 'text-yellow-400'
-    return 'text-red-400'
+    if (score === 0) return 'text-emerald-600'
+    if (score <= 2) return 'text-amber-600'
+    return 'text-red-600'
   }
 
   const getRiskBgColor = (score) => {
-    if (score === 0) return 'bg-emerald-500/20 border-emerald-500/30'
-    if (score <= 2) return 'bg-yellow-500/20 border-yellow-500/30'
-    return 'bg-red-500/20 border-red-500/30'
+    if (score === 0) return 'bg-emerald-100 border-emerald-200'
+    if (score <= 2) return 'bg-amber-100 border-amber-200'
+    return 'bg-red-100 border-red-200'
   }
 
   const getEmotionIcon = (emotion) => {
@@ -103,8 +102,8 @@ export default function DashboardDocente() {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-cyan-500/30 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-cyan-300">Cargando dashboard...</p>
+          <div className="w-12 h-12 border-4 border-cyan-200 rounded-full animate-spin mx-auto mb-4 border-t-cyan-500"></div>
+          <p className="text-slate-600">Cargando dashboard...</p>
         </div>
       </div>
     )
@@ -112,76 +111,78 @@ export default function DashboardDocente() {
 
   return (
     <div className="space-y-8">
-      {/* Header de Bienvenida */}
-      <div className="bg-gradient-to-r from-cyan-600/20 to-emerald-600/20 backdrop-blur-xl rounded-3xl shadow-2xl border border-cyan-500/20 p-8 relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-cyan-500/10 rounded-full blur-xl"></div>
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-emerald-500/10 rounded-full blur-xl"></div>
-        
-        <div className="flex items-center justify-between">
+      {/* Header de Bienvenida - Más suave */}
+        <div className="bg-gradient-to-r from-cyan-100 to-emerald-100 rounded-2xl shadow-sm border border-cyan-200 p-8">        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">
               ¡Bienvenido, {user?.full_name?.split(' ')[0]}! 👨‍🏫
             </h1>
-            <p className="text-cyan-200 text-lg">
+            <p className="text-slate-600">
               Resumen general de tus aulas y actividades
             </p>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-white">{data.overallStats.totalClassrooms} Aulas</div>
-            <div className="text-slate-300">{data.overallStats.totalStudents} Estudiantes</div>
+            <div className="text-xl font-bold text-slate-800">{data.overallStats.totalClassrooms} Aulas</div>
+            <div className="text-slate-500">{data.overallStats.totalStudents} Estudiantes</div>
           </div>
         </div>
       </div>
 
-      {/* Estadísticas Principales */}
+      {/* Estadísticas Principales - Colores suaves */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Estudiantes */}
-        <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-700/50 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Total Estudiantes</p>
-              <p className="text-3xl font-bold text-white mt-2">{data.overallStats.totalStudents}</p>
+              <p className="text-slate-600 text-sm font-medium">Total Estudiantes</p>
+              <p className="text-2xl font-bold text-slate-800 mt-1">{data.overallStats.totalStudents}</p>
             </div>
-            <div className="w-12 h-12 bg-cyan-500/20 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">👨‍🎓</span>
+            <div className="w-12 h-12 bg-cyan-50 rounded-xl flex items-center justify-center border border-cyan-100">
+              <span className="text-xl text-cyan-600">👨‍🎓</span>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <p className="text-slate-400 text-sm">En riesgo: <span className="text-red-400 font-medium">{data.classrooms.flatMap(c => c.students).filter(s => s.risk_score > 0).length}</span></p>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-slate-500 text-sm">
+              En riesgo: <span className="text-red-600 font-medium">
+                {data.classrooms.flatMap(c => c.students).filter(s => s.risk_score > 0).length}
+              </span>
+            </p>
           </div>
         </div>
 
         {/* Total Aulas */}
-        <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-700/50 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Aulas Activas</p>
-              <p className="text-3xl font-bold text-white mt-2">{data.overallStats.totalClassrooms}</p>
+              <p className="text-slate-600 text-sm font-medium">Aulas Activas</p>
+              <p className="text-2xl font-bold text-slate-800 mt-1">{data.overallStats.totalClassrooms}</p>
             </div>
-            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">🏫</span>
+            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100">
+              <span className="text-xl text-emerald-600">🏫</span>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <p className="text-slate-400 text-sm">Actividades: <span className="text-cyan-400 font-medium">{data.overallStats.activeActivities}</span></p>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-slate-500 text-sm">
+              Actividades: <span className="text-cyan-600 font-medium">{data.overallStats.activeActivities}</span>
+            </p>
           </div>
         </div>
 
         {/* Engagement Promedio */}
-        <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-700/50 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Engagement</p>
-              <p className="text-3xl font-bold text-white mt-2">{data.overallStats.avgEngagement}%</p>
+              <p className="text-slate-600 text-sm font-medium">Engagement</p>
+              <p className="text-2xl font-bold text-slate-800 mt-1">{data.overallStats.avgEngagement}%</p>
             </div>
-            <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">📈</span>
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+              <span className="text-xl text-blue-600">📈</span>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <div className="w-full bg-slate-700/50 rounded-full h-2">
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="w-full bg-slate-100 rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-cyan-500 to-emerald-500 h-2 rounded-full" 
+                className="bg-gradient-to-r from-cyan-500 to-emerald-500 h-2 rounded-full transition-all duration-500" 
                 style={{ width: `${data.overallStats.avgEngagement}%` }}
               ></div>
             </div>
@@ -189,46 +190,47 @@ export default function DashboardDocente() {
         </div>
 
         {/* Estado Emocional */}
-        <div className="bg-slate-800/40 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-700/50 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-sm">Estado Emocional</p>
-              <p className="text-2xl font-bold text-white mt-2">Positivo</p>
+              <p className="text-slate-600 text-sm font-medium">Estado Emocional</p>
+              <p className="text-xl font-bold text-slate-800 mt-1">Positivo</p>
             </div>
-            <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-              <span className="text-2xl">😊</span>
+            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center border border-purple-100">
+              <span className="text-xl text-purple-600">😊</span>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <p className="text-slate-400 text-sm">{data.emotionStats.POSITIVO}% positivo</p>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <p className="text-slate-500 text-sm">{data.emotionStats.POSITIVO}% positivo</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Distribución Emocional */}
-        <div className="bg-slate-800/40 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 p-6">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-6">
-            📊 Distribución Emocional
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+            <span className="mr-2">📊</span>
+            Distribución Emocional
           </h2>
           <div className="space-y-4">
             {Object.entries(data.emotionStats).map(([emotion, percentage]) => (
               <div key={emotion} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <span className="text-2xl">{getEmotionIcon(emotion)}</span>
-                  <span className="text-white capitalize">{emotion.toLowerCase()}</span>
+                  <span className="text-xl">{getEmotionIcon(emotion)}</span>
+                  <span className="text-slate-700 capitalize font-medium">{emotion.toLowerCase()}</span>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <div className="w-32 bg-slate-700/50 rounded-full h-3">
+                  <div className="w-32 bg-slate-100 rounded-full h-2">
                     <div 
-                      className={`h-3 rounded-full ${
+                      className={`h-2 rounded-full transition-all duration-500 ${
                         emotion === 'POSITIVO' ? 'bg-emerald-500' :
-                        emotion === 'NEUTRAL' ? 'bg-yellow-500' : 'bg-red-500'
+                        emotion === 'NEUTRAL' ? 'bg-amber-500' : 'bg-red-500'
                       }`}
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
-                  <span className="text-white font-medium w-12 text-right">{percentage}%</span>
+                  <span className="text-slate-800 font-semibold w-12 text-right">{percentage}%</span>
                 </div>
               </div>
             ))}
@@ -236,21 +238,22 @@ export default function DashboardDocente() {
         </div>
 
         {/* Actividades Recientes */}
-        <div className="bg-slate-800/40 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 p-6">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent mb-6">
-            🎯 Actividades Recientes
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+            <span className="mr-2">🎯</span>
+            Actividades Recientes
           </h2>
           <div className="space-y-4">
             {data.recentActivities.map(activity => (
-              <div key={activity.id} className="flex items-center justify-between p-4 bg-slate-700/30 rounded-2xl border border-slate-600/50 hover:border-cyan-500/30 transition-all duration-300">
-                <div>
-                  <h3 className="font-semibold text-white">{activity.title}</h3>
-                  <p className="text-slate-400 text-sm">{activity.classroom}</p>
-                  <p className="text-slate-500 text-xs">{activity.date}</p>
+              <div key={activity.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-cyan-200 transition-all duration-200">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-800">{activity.title}</h3>
+                  <p className="text-slate-600 text-sm">{activity.classroom}</p>
+                  <p className="text-slate-500 text-xs mt-1">{activity.date}</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-cyan-400 font-bold">{activity.engagement}%</div>
-                  <div className="text-slate-400 text-sm">engagement</div>
+                  <div className="text-cyan-600 font-bold text-lg">{activity.engagement}%</div>
+                  <div className="text-slate-500 text-sm">engagement</div>
                 </div>
               </div>
             ))}
@@ -259,22 +262,23 @@ export default function DashboardDocente() {
       </div>
 
       {/* Lista de Aulas y Estudiantes */}
-      <div className="bg-slate-800/40 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-700/50 p-6">
-        <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-emergent-400 bg-clip-text text-transparent mb-6">
-          🏫 Mis Aulas
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+        <h2 className="text-lg font-semibold text-slate-800 mb-6 flex items-center">
+          <span className="mr-2">🏫</span>
+          Mis Aulas
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {data.classrooms.map(classroom => (
-            <div key={classroom.id} className="bg-slate-700/30 rounded-2xl border border-slate-600/50 p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">{classroom.name}</h3>
+            <div key={classroom.id} className="bg-slate-50 rounded-xl border border-slate-200 p-6 hover:shadow-sm transition-shadow">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">{classroom.name}</h3>
               <div className="space-y-3">
                 {classroom.students.map(student => (
-                  <div key={student.id} className="flex items-center justify-between p-3 bg-slate-600/20 rounded-xl">
+                  <div key={student.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-slate-200 hover:shadow-sm transition-shadow">
                     <div className="flex items-center space-x-3">
                       <span className={`text-lg ${getRiskColor(student.risk_score)}`}>
                         {getEmotionIcon(student.last_emotion)}
                       </span>
-                      <span className="text-white">{student.full_name}</span>
+                      <span className="text-slate-700 font-medium">{student.full_name}</span>
                     </div>
                     {student.risk_score > 0 && (
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskBgColor(student.risk_score)} ${getRiskColor(student.risk_score)}`}>
@@ -284,8 +288,8 @@ export default function DashboardDocente() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-600/50 text-center">
-                <span className="text-slate-400 text-sm">
+              <div className="mt-4 pt-4 border-t border-slate-200 text-center">
+                <span className="text-slate-500 text-sm font-medium">
                   {classroom.students.length} estudiantes
                 </span>
               </div>
@@ -295,4 +299,4 @@ export default function DashboardDocente() {
       </div>
     </div>
   )
-} 
+}

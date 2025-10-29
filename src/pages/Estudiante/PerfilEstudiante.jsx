@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
+// 👇 Añade esto al inicio del archivo, justo después de los imports
+const Role = {
+  STUDENT: 'STUDENT',
+  TEACHER: 'TEACHER'
+}
 // Datos mock del estudiante corregidos según interfaces
 const mockStudentProfile = {
   id: 's1',

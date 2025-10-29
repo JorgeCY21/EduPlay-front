@@ -26,7 +26,6 @@ export default function Header({ vistaActual, setVistaActual }) {
 
   const navItemsStudent = [
     { id: 'dashboard', label: '🏠 Inicio' },
-    { id: 'actividades', label: '📚 Actividades' },
     { id: 'perfil', label: '👤 Perfil' },
   ]
 

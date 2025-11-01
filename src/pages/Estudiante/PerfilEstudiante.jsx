@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 
+const Role = {
+  STUDENT: 'STUDENT',
+  TEACHER: 'TEACHER',
+  ADMIN: 'ADMIN'
+}
+
 // Datos mock del estudiante corregidos según interfaces
 const mockStudentProfile = {
   id: 's1',

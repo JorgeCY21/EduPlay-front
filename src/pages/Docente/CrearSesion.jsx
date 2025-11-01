@@ -1,9 +1,43 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { getEnrollment } from '../../services/enrollement.services'
+import { createActivity } from '../../services/activity.services';
+import { createActividadesAI } from '../../services/ai.services';
+
+const colorPalette = [
+  'from-[#5D0B0B] to-[#7A1C1C]',
+  'from-[#7A1C1C] to-[#952626]',
+  'from-[#952626] to-[#B03030]',
+  'from-[#B03030] to-[#CB3A3A]',
+  'from-[#CB3A3A] to-[#E14444]',
+  'from-[#7B1113] to-[#A8191C]',
+  'from-[#9E1A1A] to-[#C62828]',
+  'from-[#8B0000] to-[#A52A2A]',
+  'from-[#A52A2A] to-[#C04C4C]',
+  'from-[#6E0D0D] to-[#8F1E1E]'
+];
+
+let usedColors = [];
+let colorIndex = 0;
+
+function getUniqueColor() {
+  if (usedColors.length >= colorPalette.length) {
+    usedColors = []; // reinicia si ya se usaron todos
+    colorIndex = 0;
+  }
+
+  const color = colorPalette[colorIndex];
+  usedColors.push(color);
+  colorIndex++;
+
+  return color;
+}
 
 export default function CrearSesion() {
   const { user } = useAuth()
   const [paso, setPaso] = useState('seleccionar-curso')
+  const [loading, setLoading] = useState(true)
+  const [cursos, setCursos] = useState()
   const [cursoSeleccionado, setCursoSeleccionado] = useState(null)
   const [configuracion, setConfiguracion] = useState({
     titulo: '',
@@ -20,45 +54,35 @@ export default function CrearSesion() {
     tiempoEstimado: 45,
     dificultad: 'media'
   })
+  const [activity_id, setActivity_id] = useState(null)
 
   const [materiales, setMateriales] = useState([])
   const [nuevoMaterial, setNuevoMaterial] = useState({ titulo: '', url: '', tipo: 'video' })
 
-  // Paleta de rojos guinda/borgoña
-  const cursos = [
-    { 
-      id: 1, 
-      nombre: 'Matemáticas 1A', 
-      estudiantes: 25, 
-      grado: 5,
-      descripcion: 'Operaciones básicas y geometría',
-      color: 'from-[#5D0B0B] to-[#7A1C1C]'
-    },
-    { 
-      id: 2, 
-      nombre: 'Ciencias Naturales', 
-      estudiantes: 22, 
-      grado: 5,
-      descripcion: 'Ecosistemas y seres vivos',
-      color: 'from-[#7A1C1C] to-[#952626]'
-    },
-    { 
-      id: 3, 
-      nombre: 'Historia Universal', 
-      estudiantes: 28, 
-      grado: 6,
-      descripcion: 'Civilizaciones antiguas',
-      color: 'from-[#952626] to-[#B03030]'
-    },
-    { 
-      id: 4, 
-      nombre: 'Literatura Infantil', 
-      estudiantes: 20, 
-      grado: 4,
-      descripcion: 'Cuentos y fábulas',
-      color: 'from-[#B03030] to-[#CB3A3A]'
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+
+      const data = await getEnrollment(user.teacher.id);
+
+      const cursosConColores = data.map(dt => ({
+
+        id: dt.id,
+        nombre: dt.course.name,
+        estudiantes: dt.totalStudents,
+        grado: dt.grades[0],
+        descripcion: 'Sin descripción disponible',
+        color: getUniqueColor()
+      }))
+
+      setCursos(cursosConColores)
+
+      setLoading(false)
     }
-  ]
+
+    fetchData();
+  }, [user?.teacher?.id])
+
 
   const tiposActividad = {
     flashcards: { icon: '📚', color: 'bg-[#f8f4f0] text-[#5D0B0B] border border-[#5D0B0B]/20' },
@@ -78,8 +102,8 @@ export default function CrearSesion() {
     setMateriales(materiales.filter(m => m.id !== id))
   }
 
-  const agregarActividad = () => {
-    const nuevaActividad = {
+  const agregarActividad = async () => {
+    /* const nuevaActividad = {
       id: Date.now(),
       tipo: 'flashcards',
       nombre: 'Nueva Actividad',
@@ -89,7 +113,15 @@ export default function CrearSesion() {
     setConfiguracion({
       ...configuracion,
       actividades: [...configuracion.actividades, nuevaActividad]
+    }) */
+
+    const data = await createActividadesAI(activity_id, {
+      topic: configuracion.titulo,
+      context: configuracion.descripcion,
+      minItems: 3
     })
+
+    console.log(data);
   }
 
   const eliminarActividad = (id) => {
@@ -102,12 +134,12 @@ export default function CrearSesion() {
   const generarConIA = (actividadIndex) => {
     const actividades = [...configuracion.actividades]
     actividades[actividadIndex].config.tema = `Tema generado para ${actividades[actividadIndex].nombre}`
-    
+
     setConfiguracion({
       ...configuracion,
       actividades
     })
-    
+
     alert(`¡Contenido generado para ${actividades[actividadIndex].nombre}!`)
   }
 
@@ -118,6 +150,21 @@ export default function CrearSesion() {
       materiales
     })
     alert('¡Sesión creada exitosamente!')
+  }
+
+  const handleGuardar = async () => {
+    const data = await createActivity({
+      title: configuracion.titulo,
+      description: configuracion.descripcion,
+      enrollment_id: cursoSeleccionado.id,
+      hasIntroduction: configuracion.introduccion,
+    })
+    setActivity_id(data.id);
+    console.log(data);
+  }
+
+  if (loading) {
+    return <div>Cargando...</div>
   }
 
   // Paso 1: Seleccionar Curso
@@ -133,7 +180,7 @@ export default function CrearSesion() {
         {/* Grid de Cursos */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
           {cursos.map(curso => (
-            <div 
+            <div
               key={curso.id}
               className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer group"
               onClick={() => {
@@ -153,7 +200,7 @@ export default function CrearSesion() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Contenido del curso */}
               <div className="p-6">
                 <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
@@ -166,7 +213,7 @@ export default function CrearSesion() {
                     </span>
                   </div>
                 </div>
-                
+
                 {/* Progress bar con color guinda */}
                 <div className="mb-4">
                   <div className="flex justify-between text-xs text-gray-500 mb-1">
@@ -174,7 +221,7 @@ export default function CrearSesion() {
                     <span>78%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-[#952626] to-[#CB3A3A] h-2 rounded-full transition-all duration-500"
                       style={{ width: '78%' }}
                     ></div>
@@ -220,7 +267,7 @@ export default function CrearSesion() {
       <div className="flex items-center justify-between">
         <div>
           <nav className="flex space-x-2 text-sm text-gray-500 mb-2">
-            <button 
+            <button
               onClick={() => setPaso('seleccionar-curso')}
               className="hover:text-[#B03030] transition-colors"
             >
@@ -243,27 +290,47 @@ export default function CrearSesion() {
           {/* Información básica */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Información de la Sesión</h3>
+
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Título de la sesión</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Título de la sesión
+                </label>
                 <input
                   type="text"
                   value={configuracion.titulo}
-                  onChange={(e) => setConfiguracion({...configuracion, titulo: e.target.value})}
+                  onChange={(e) =>
+                    setConfiguracion({ ...configuracion, titulo: e.target.value })
+                  }
                   placeholder="Ej: Introducción a las Fracciones"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#B03030] focus:border-transparent transition-all duration-200"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Descripción
+                </label>
                 <textarea
                   value={configuracion.descripcion}
-                  onChange={(e) => setConfiguracion({...configuracion, descripcion: e.target.value})}
+                  onChange={(e) =>
+                    setConfiguracion({ ...configuracion, descripcion: e.target.value })
+                  }
                   placeholder="Describe los objetivos de aprendizaje..."
                   rows="3"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#B03030] focus:border-transparent transition-all duration-200 resize-none"
                 />
               </div>
+            </div>
+
+            {/* Botón de Guardar */}
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleGuardar}
+                className="px-6 py-3 bg-gradient-to-r from-[#B03030] to-[#CB3A3A] text-white font-semibold rounded-xl shadow-md hover:opacity-90 hover:scale-[1.02] transition-all duration-200"
+              >
+                Guardar cambios
+              </button>
             </div>
           </div>
 
@@ -296,14 +363,14 @@ export default function CrearSesion() {
                       </button>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="sr-only peer"
                         checked={actividad.activa}
                         onChange={(e) => {
                           const nuevasActividades = [...configuracion.actividades]
                           nuevasActividades[index].activa = e.target.checked
-                          setConfiguracion({...configuracion, actividades: nuevasActividades})
+                          setConfiguracion({ ...configuracion, actividades: nuevasActividades })
                         }}
                       />
                       <div className="w-12 h-6 bg-gray-200 peer-focus:ring-4 peer-focus:ring-[#B03030]/30 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#B03030]"></div>
@@ -312,13 +379,13 @@ export default function CrearSesion() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <input 
+                      <input
                         type="text"
                         value={actividad.nombre}
                         onChange={(e) => {
                           const nuevasActividades = [...configuracion.actividades]
                           nuevasActividades[index].nombre = e.target.value
-                          setConfiguracion({...configuracion, actividades: nuevasActividades})
+                          setConfiguracion({ ...configuracion, actividades: nuevasActividades })
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B03030] focus:border-transparent"
                         placeholder="Nombre de la actividad"
@@ -349,26 +416,26 @@ export default function CrearSesion() {
           {/* Materiales Adicionales */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Materiales de Apoyo</h3>
-            
+
             <div className="space-y-4 mb-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input
                   type="text"
                   placeholder="Título del material"
                   value={nuevoMaterial.titulo}
-                  onChange={(e) => setNuevoMaterial({...nuevoMaterial, titulo: e.target.value})}
+                  onChange={(e) => setNuevoMaterial({ ...nuevoMaterial, titulo: e.target.value })}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B03030] focus:border-transparent"
                 />
                 <input
                   type="url"
                   placeholder="URL del recurso"
                   value={nuevoMaterial.url}
-                  onChange={(e) => setNuevoMaterial({...nuevoMaterial, url: e.target.value})}
+                  onChange={(e) => setNuevoMaterial({ ...nuevoMaterial, url: e.target.value })}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B03030] focus:border-transparent"
                 />
                 <select
                   value={nuevoMaterial.tipo}
-                  onChange={(e) => setNuevoMaterial({...nuevoMaterial, tipo: e.target.value})}
+                  onChange={(e) => setNuevoMaterial({ ...nuevoMaterial, tipo: e.target.value })}
                   className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B03030] focus:border-transparent"
                 >
                   <option value="video">🎥 Video</option>
@@ -390,9 +457,9 @@ export default function CrearSesion() {
                 <div key={material.id} className="flex items-center justify-between p-3 bg-[#f8f4f0] rounded-lg border border-[#B03030]/20">
                   <div className="flex items-center space-x-3">
                     <span className="text-lg">
-                      {material.tipo === 'video' ? '🎥' : 
-                       material.tipo === 'document' ? '📄' : 
-                       material.tipo === 'image' ? '🖼️' : '🔗'}
+                      {material.tipo === 'video' ? '🎥' :
+                        material.tipo === 'document' ? '📄' :
+                          material.tipo === 'image' ? '🖼️' : '🔗'}
                     </span>
                     <div>
                       <div className="font-medium text-gray-800">{material.titulo}</div>
@@ -416,7 +483,7 @@ export default function CrearSesion() {
           {/* Resumen de configuración */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Configuración</h3>
-            
+
             <div className="space-y-4">
               {/* Tiempo estimado */}
               <div>
@@ -427,7 +494,7 @@ export default function CrearSesion() {
                   max="120"
                   step="15"
                   value={configuracion.tiempoEstimado}
-                  onChange={(e) => setConfiguracion({...configuracion, tiempoEstimado: parseInt(e.target.value)})}
+                  onChange={(e) => setConfiguracion({ ...configuracion, tiempoEstimado: parseInt(e.target.value) })}
                   className="w-full accent-[#B03030]"
                 />
                 <div className="text-center text-lg font-bold text-[#B03030] mt-2">
@@ -440,7 +507,7 @@ export default function CrearSesion() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Nivel de dificultad</label>
                 <select
                   value={configuracion.dificultad}
-                  onChange={(e) => setConfiguracion({...configuracion, dificultad: e.target.value})}
+                  onChange={(e) => setConfiguracion({ ...configuracion, dificultad: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B03030] focus:border-transparent"
                 >
                   <option value="baja">Baja</option>
@@ -462,8 +529,8 @@ export default function CrearSesion() {
                       <span>{seccion.label}</span>
                     </span>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="sr-only peer"
                         checked={configuracion[seccion.key]}
                         onChange={(e) => setConfiguracion({
@@ -502,13 +569,13 @@ export default function CrearSesion() {
 
           {/* Botones de acción */}
           <div className="space-y-3">
-            <button 
+            <button
               onClick={() => setPaso('seleccionar-curso')}
               className="w-full bg-gray-500 text-white px-6 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
             >
               ← Volver a Cursos
             </button>
-            <button 
+            <button
               onClick={crearSesion}
               className="w-full bg-gradient-to-r from-[#7A1C1C] to-[#B03030] text-white px-6 py-3 rounded-xl hover:from-[#5D0B0B] hover:to-[#7A1C1C] transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
             >

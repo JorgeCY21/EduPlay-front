@@ -13,8 +13,6 @@ export function AuthProvider({ children }) {
       setUser(JSON.parse(savedUser))
     }
     setLoading(false)
-    
-    console.log('👥 Usuarios mock disponibles:', getMockUsers())
   }, [])
 
   const login = async (email, password) => {

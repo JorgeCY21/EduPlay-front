@@ -1,144 +1,82 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-
-// Datos mock actualizados basados en el schema de BD y usando tu estructura
-const mockData = {
-  classrooms: [
-    {
-      id: 'c1',
-      name: '10mo Grado - Matemáticas',
-      grade: 10,
-      students: [
-        { 
-          id: 's1',
-          full_name: 'Ana Martínez Silva',
-          nickname: 'Anita',
-          age: 15,
-          grade: 10,
-          risk_score: 0, 
-          last_emotion: 'POSITIVO', 
-          progress: 92,
-          user_id: '3',
-          classroom_id: 'c1'
-        },
-        { 
-          id: 's3',
-          full_name: 'Elena Torres Ríos',
-          nickname: 'Elenita',
-          age: 16,
-          grade: 10,
-          risk_score: 1, 
-          last_emotion: 'POSITIVO', 
-          progress: 85,
-          user_id: '5',
-          classroom_id: 'c1'
-        }
-      ]
-    },
-    {
-      id: 'c2', 
-      name: '9no Grado - Ciencias',
-      grade: 9,
-      students: [
-        { 
-          id: 's2',
-          full_name: 'Luis Hernández Castro',
-          nickname: 'Lucho',
-          age: 14,
-          grade: 9,
-          risk_score: 2, 
-          last_emotion: 'NEUTRAL', 
-          progress: 78,
-          user_id: '4',
-          classroom_id: 'c2'
-        }
-      ]
-    }
-  ],
-  recentActivities: [
-    {
-      id: 'a1',
-      title: 'Introducción a Álgebra',
-      classroom: '10mo Grado - Matemáticas',
-      date: '2024-01-15',
-      engagement: 85,
-      completion: 90,
-      type: 'quiz',
-      duration: '45 min',
-      enrollment_id: 'e1'
-    },
-    {
-      id: 'a2', 
-      title: 'Ecuaciones Lineales',
-      classroom: '10mo Grado - Matemáticas',
-      date: '2024-01-14',
-      engagement: 78,
-      completion: 85,
-      type: 'flashcards',
-      duration: '30 min',
-      enrollment_id: 'e1'
-    },
-    {
-      id: 'a3',
-      title: 'Células y Organismos',
-      classroom: '9no Grado - Ciencias',
-      date: '2024-01-13',
-      engagement: 92,
-      completion: 88,
-      type: 'memory',
-      duration: '60 min',
-      enrollment_id: 'e2'
-    }
-  ],
-  emotionStats: {
-    POSITIVO: 65,
-    NEUTRAL: 25,
-    NEGATIVO: 10
-  },
-  overallStats: {
-    totalStudents: 3,
-    totalClassrooms: 2,
-    activeActivities: 5,
-    avgEngagement: 82,
-    avgProgress: 85,
-    sessionsThisWeek: 12
-  },
-  upcomingSessions: [
-    {
-      id: 'u1',
-      title: 'Geometría Básica',
-      classroom: '10mo Grado - Matemáticas',
-      date: '2024-01-16',
-      time: '10:00 AM',
-      students: 2,
-      enrollment_id: 'e1'
-    },
-    {
-      id: 'u2',
-      title: 'Sistema Solar',
-      classroom: '9no Grado - Ciencias',
-      date: '2024-01-17',
-      time: '11:30 AM',
-      students: 1,
-      enrollment_id: 'e2'
-    }
-  ]
-}
+import { getEnrollment } from '../../services/enrollement.services'
+import { getStudentsClassroom } from '../../services/student.services'
+import { s } from 'framer-motion/client'
+import { getActivityComing, getActivityRecently } from '../../services/activity.services'
+import { getEmotionStats, getOverallStats } from '../../services/teacher.services'
 
 export default function DashboardDocente() {
   const { user } = useAuth()
-  const [data, setData] = useState(mockData)
-  const [loading, setLoading] = useState(false)
+  const [data, setData] = useState()
+  const [loading, setLoading] = useState(true)
   const [selectedClassroom, setSelectedClassroom] = useState(null)
 
   // Simular carga de datos
   useEffect(() => {
-    setLoading(true)
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [])
+    if (!user?.teacher?.id) return;
+    setLoading(true);
+
+    const fetchEnrollment = async () => {
+      try {
+        const data = await getEnrollment(user.teacher.id);
+
+        let classrooms = await Promise.all(
+          data.map(async (enrollment) => {
+            const studentsData = await getStudentsClassroom(enrollment.classroom.id);
+
+            let grade = studentsData.length > 0 ? studentsData[0].grade : 1;
+
+            const formattedStudents = studentsData.map((student) => {
+
+              return {
+                id: student.id,
+                full_name: student.user.full_name,
+                nickname: student.nickname,
+                age: student.age,
+                grade: student.grade,
+                risk_score: 1,
+                last_emotion: 'POSITIVO',
+                progress: 85,
+                user_id: student.user_id,
+                classroom_id: student.classroom_id
+              };
+            });
+
+            return {
+              id: enrollment.classroom.id,
+              name: enrollment.classroom.name,
+              grade: grade,
+              students: formattedStudents,
+            };
+          })
+        );
+
+        classrooms = Array.from(
+          new Map(classrooms.map((cls) => [cls.id, cls])).values()
+        );
+
+        const recentActivities = await getActivityRecently(user.teacher.id);
+
+        const upcomingSessions = await getActivityComing(user.teacher.id);
+
+        const overallStats = await getOverallStats(user.teacher.id);
+
+        const emotionStats = await getEmotionStats(user.teacher.id);
+
+        const data_formatted = { classrooms, recentActivities, upcomingSessions, ...overallStats, ...emotionStats };
+
+        setData(data_formatted);
+        setLoading(false);
+
+      } catch (error) {
+        console.error('Error obteniendo inscripciones:', error);
+      }
+    };
+
+    fetchEnrollment();
+  }, [user.teacher.id]);
+
 
   // Paleta de colores consistente con el perfil - tonos rojos/marrones
   const getRiskColor = (score) => {
@@ -154,7 +92,7 @@ export default function DashboardDocente() {
   }
 
   const getEmotionIcon = (emotion) => {
-    switch(emotion) {
+    switch (emotion) {
       case 'POSITIVO': return '😊'
       case 'NEUTRAL': return '😐'
       case 'NEGATIVO': return '😢'
@@ -163,7 +101,7 @@ export default function DashboardDocente() {
   }
 
   const getActivityIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'quiz': return '📝'
       case 'flashcards': return '📚'
       case 'memory': return '🧠'
@@ -219,7 +157,7 @@ export default function DashboardDocente() {
             <div className="text-white/80">{data.overallStats.totalStudents} Estudiantes</div>
           </div>
         </div>
-        
+
         {/* Mini estadísticas en header */}
         <div className="grid grid-cols-3 gap-4 mt-6">
           <div className="text-center">
@@ -290,8 +228,8 @@ export default function DashboardDocente() {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="w-full bg-gray-100 rounded-full h-3">
-              <div 
-                className="bg-gradient-to-r from-[#5D0B0B] to-[#952626] h-3 rounded-full transition-all duration-1000" 
+              <div
+                className="bg-gradient-to-r from-[#5D0B0B] to-[#952626] h-3 rounded-full transition-all duration-1000"
                 style={{ width: `${data.overallStats.avgEngagement}%` }}
               ></div>
             </div>
@@ -334,12 +272,11 @@ export default function DashboardDocente() {
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="w-24 bg-gray-100 rounded-full h-3">
-                    <div 
-                      className={`h-3 rounded-full transition-all duration-1000 ${
-                        emotion === 'POSITIVO' ? 'bg-gradient-to-r from-[#5D0B0B] to-[#7A1C1C]' :
-                        emotion === 'NEUTRAL' ? 'bg-gradient-to-r from-[#7A1C1C] to-[#952626]' : 
-                        'bg-gradient-to-r from-[#B03030] to-[#D14343]'
-                      }`}
+                    <div
+                      className={`h-3 rounded-full transition-all duration-1000 ${emotion === 'POSITIVO' ? 'bg-gradient-to-r from-[#5D0B0B] to-[#7A1C1C]' :
+                        emotion === 'NEUTRAL' ? 'bg-gradient-to-r from-[#7A1C1C] to-[#952626]' :
+                          'bg-gradient-to-r from-[#B03030] to-[#D14343]'
+                        }`}
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
@@ -347,7 +284,7 @@ export default function DashboardDocente() {
               </div>
             ))}
           </div>
-          
+
           {/* Gráfico circular simplificado */}
           <div className="mt-8 p-4 bg-gradient-to-br from-[#f8f4f0] to-[#f0e6e0] rounded-xl border border-[#7A1C1C]/10">
             <div className="text-center">
@@ -370,7 +307,7 @@ export default function DashboardDocente() {
           </div>
           <div className="space-y-4">
             {data.recentActivities.map(activity => (
-              <div key={activity.id} className="flex items-center justify-between p-5 bg-gradient-to-r from-[#f8f4f0] to-white rounded-xl border border-gray-200 hover:border-[#952626]/30 transition-all duration-300 hover:shadow-md">
+              <div key={`${activity.id}-${activity.type}`} className="flex items-center justify-between p-5 bg-gradient-to-r from-[#f8f4f0] to-white rounded-xl border border-gray-200 hover:border-[#952626]/30 transition-all duration-300 hover:shadow-md">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-[#f8f4f0] to-[#f0e6e0] rounded-xl flex items-center justify-center border border-[#952626]/20">
                     <span className="text-xl">{getActivityIcon(activity.type)}</span>
@@ -415,7 +352,7 @@ export default function DashboardDocente() {
             {data.overallStats.totalStudents} estudiantes en total
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {data.classrooms.map(classroom => (
             <div key={classroom.id} className="bg-gradient-to-br from-[#f8f4f0] to-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
@@ -431,7 +368,7 @@ export default function DashboardDocente() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 {classroom.students.map(student => (
                   <div key={student.id} className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-[#952626]/30 transition-all duration-200 hover:shadow-sm">
@@ -456,11 +393,11 @@ export default function DashboardDocente() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Progress bar individual */}
                     <div className="w-20">
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className={`h-2 rounded-full bg-gradient-to-r ${getProgressGradient(student.progress)} transition-all duration-500`}
                           style={{ width: `${student.progress}%` }}
                         ></div>
@@ -475,36 +412,37 @@ export default function DashboardDocente() {
       </div>
 
       {/* Próximas Sesiones */}
-      <div className="bg-gradient-to-r from-[#5D0B0B] to-[#952626] rounded-2xl shadow-lg border border-[#7A1C1C] p-6 text-white">
-        <h2 className="text-xl font-bold mb-6 flex items-center">
-          <span className="mr-3 text-2xl">⏰</span>
-          Próximas Sesiones
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data.upcomingSessions.map(session => (
-            <div key={session.id} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-bold text-lg">{session.title}</h3>
-                  <p className="text-white/80 text-sm">{session.classroom}</p>
+      {data.upcomingSessions.length > 0 && (
+        <div className="bg-gradient-to-r from-[#5D0B0B] to-[#952626] rounded-2xl shadow-lg border border-[#7A1C1C] p-6 text-white">
+          <h2 className="text-xl font-bold mb-6 flex items-center">
+            <span className="mr-3 text-2xl">⏰</span>
+            Próximas Sesiones
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {data.upcomingSessions.map(session => (
+              <div key={session.id} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/15 transition-all duration-300">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-lg">{session.title}</h3>
+                    <p className="text-white/80 text-sm">{session.classroom}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white/90 font-semibold">{session.date}</div>
+                    <div className="text-white/70 text-sm">{session.time}</div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-white/90 font-semibold">{session.date}</div>
-                  <div className="text-white/70 text-sm">{session.time}</div>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-white/80 text-sm">
+                    {session.students} estudiantes
+                  </span>
+                  <button className="bg-white text-[#952626] px-3 py-1 rounded-lg text-sm font-bold hover:bg-white/90 transition-colors">
+                    Preparar
+                  </button>
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-white/80 text-sm">
-                  {session.students} estudiantes
-                </span>
-                <button className="bg-white text-[#952626] px-3 py-1 rounded-lg text-sm font-bold hover:bg-white/90 transition-colors">
-                  Preparar
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        </div>)}
     </div>
   )
 }

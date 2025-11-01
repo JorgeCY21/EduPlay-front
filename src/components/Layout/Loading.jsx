@@ -45,7 +45,7 @@ export default function Loading() {
       </div>
 
       {/* Estilos para animación reverse */}
-      <style jsx>{`
+      <style>{`
         @keyframes spin-reverse {
           from {
             transform: rotate(360deg);

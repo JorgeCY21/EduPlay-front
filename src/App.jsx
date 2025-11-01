@@ -11,7 +11,7 @@ import Header from './components/Layout/Header'
 import Loading from './components/Layout/Loading'
 
 function App() {
-  const { user, loading, logout } = useAuth()
+  const { user, loading } = useAuth()
   const [isLogin, setIsLogin] = useState(true)
   const [vistaActual, setVistaActual] = useState('dashboard')
 

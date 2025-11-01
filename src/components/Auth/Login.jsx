@@ -58,6 +58,7 @@ export default function Login({ onToggleAuth }) {
         setErrors({ submit: result.error })
       }
     } catch (error) {
+      console.error('Error en login:', error)
       setErrors({ submit: 'Error inesperado. Intenta nuevamente.' })
     } finally {
       setIsLoading(false)
@@ -286,7 +287,7 @@ export default function Login({ onToggleAuth }) {
       </div>
 
       {/* Estilos para la animación de flotación */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% {
             transform: translateY(0) translateX(0) rotate(0deg);

@@ -1,3 +1,9 @@
+import { use } from "react"
+import { login } from "../services/auth.services"
+import { getTeacherUser } from "../services/teacher.services"
+import { getStudentUser } from "../services/student.services"
+import { i } from "framer-motion/client"
+
 // Datos mock actualizados según el schema de Prisma
 export const mockUsers = [
   {
@@ -113,7 +119,7 @@ export const mockClassrooms = [
     enrollments: []
   },
   {
-    id: 'c2', 
+    id: 'c2',
     name: '9no Grado - Ciencias',
     students: [],
     enrollments: []
@@ -136,20 +142,39 @@ export const mockCourses = [
 ]
 
 // Función para simular login
-export const mockLogin = (email, password) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const user = mockUsers.find(u => u.email === email && u.password === password)
-      if (user) {
-        // No devolver la contraseña por seguridad
-        const { password, ...userWithoutPassword } = user
-        resolve(userWithoutPassword)
-      } else {
-        reject(new Error('Credenciales incorrectas'))
-      }
-    }, 1000)
-  })
-}
+export const mockLogin = async (email, password) => {
+  try {
+    const user_data = await login(email, password);
+
+    if (!user_data?.user) {
+      throw new Error("Credenciales incorrectas");
+    }
+
+    let role_data = {};
+
+    if (user_data.user.role === "TEACHER") {
+      const teacher = await getTeacherUser(user_data.user.id);
+      role_data = { teacher };
+    } else {
+      const student = await getStudentUser(user_data.user.id);
+      role_data = { student };
+    }
+
+    const data = {
+      id: user_data.user.id,
+      full_name: user_data.user.full_name,
+      email: user_data.user.email,
+      role: user_data.user.role,
+      ...role_data,
+    };
+
+    return data;
+  } catch (error) {
+    console.error("Error en mockLogin:", error);
+    throw new Error("Credenciales incorrectas o error al obtener datos del usuario");
+  }
+};
+
 
 // Función para simular registro
 export const mockRegister = (userData) => {
@@ -164,7 +189,7 @@ export const mockRegister = (userData) => {
 
       // Determinar el rol basado en el email o datos
       const role = userData.role === 'docente' ? 'TEACHER' : 'STUDENT'
-      
+
       // Crear nuevo usuario según el schema
       const newUser = {
         id: Date.now().toString(),
